@@ -1,0 +1,65 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: registry
+spec:
+  volumeMode: Filesystem
+  capacity:
+    storage: 40Gi
+  accessModes:
+    - ReadWriteOnce
+  mountOptions:
+    - hard
+    - noatime
+  nfs:
+    path: /volume1/k8s
+    server: 172.16.100.5
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: registry
+  labels:
+    app: registry
+spec:
+  containers:
+    - name: registry
+      image: registry:2
+      imagePullPolicy: IfNotPresent
+      volumeMounts:
+        - mountPath: /var/lib/registry
+          name: registry-data
+  restartPolicy: Always
+  volumes:
+    - name: registry-data
+      persistentVolumeClaim:
+        claimName: registryStorage
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: registry
+spec:
+  selector:
+    app: registry
+  ports:
+    - port: 5000
+  type: LoadBalancer
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: registry
+spec:
+  rules:
+    - host: "registry.hnatekmar.xyz"
+      http:
+          paths:
+            - path: /
+              pathType: Prefix
+              backend:
+                service:
+                  name: registry
+                  port:
+                    number: 5000
