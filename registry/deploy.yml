@@ -56,3 +56,17 @@ spec:
   ports:
     - port: 5000
   type: LoadBalancer
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: registry-ingress
+spec:
+  rules:
+    - host: "registry.k8s.local"
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: registry
+              servicePort: 5000
