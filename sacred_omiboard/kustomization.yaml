@@ -1,0 +1,5 @@
+commonLabels:
+  app: sacred
+resources:
+  - secret.yml
+  - sacred.yaml

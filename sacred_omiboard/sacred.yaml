@@ -1,0 +1,89 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sacred-deployment
+  labels:
+    app: sacred
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sacred
+  template:
+    metadata:
+      labels:
+        app: sacred
+    spec:
+      containers:
+        - name: sacred
+          image: mongo
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 27017
+          env:
+            - name: ME_CONFIG_MONGODB_ADMINPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: sacred-secret
+                  key: password
+            - name: ME_CONFIG_MONGODB_ADMINUSERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: sacred-secret
+                  key: login
+        - name: omniboard
+          imagePullPolicy: Always
+          image: vivekratnavel/omniboard
+          ports:
+            - containerPort: 9000
+          args:
+            - "--mu mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@localhost/db"
+          env:
+            - name: MONGO_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: sacred-secret
+                  key: password
+            - name: MONGO_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: sacred-secret
+                  key: login
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sacred-service
+spec:
+  selector:
+    app: sacred
+  ports:
+    - name: web
+      port: 9000
+    - port: 27017
+      name: database
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sacred-ingress
+spec:
+  rules:
+    - host: sacred.lan
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                port:
+                  name: web
+                name: sacred-service
+          - path: /db
+            pathType: Prefix
+            backend:
+              service:
+                port:
+                  name: database
+                name: sacred-service
