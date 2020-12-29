@@ -22,15 +22,9 @@ spec:
             - containerPort: 27017
           env:
             - name: MONGO_INITDB_ROOT_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: sacred-secret
-                  key: login
+              value: admin
             - name: MONGO_INITDB_ROOT_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: sacred-secret
-                  key: password
+              value: admin
             - name: MONGO_INITDB_DATABASE
               value: db
         - name: omniboard
