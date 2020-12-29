@@ -33,17 +33,6 @@ spec:
           ports:
             - containerPort: 9000
           args: ["--mu", "mongodb://admin:admin@localhost:27017/db?authSource=admin"]
-          env:
-            - name: MONGO_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: sacred-secret
-                  key: password
-            - name: MONGO_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: sacred-secret
-                  key: login
 ---
 apiVersion: v1
 kind: Service
@@ -75,7 +64,7 @@ metadata:
   name: sacred-ingress
 spec:
   rules:
-    - host: sacred.k8s.hnatekmar.xyz
+    - host: sacred.hnatekmar.xyz
       http:
         paths:
           - path: /
