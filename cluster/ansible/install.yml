@@ -1,0 +1,56 @@
+---
+- hosts: all
+  tasks:
+    - name: Install prerequisites
+      apt:
+        name: curl
+
+    - name: Uninstall k3s
+      command: k3s-uninstall.sh
+      ignore_errors: yes
+
+    - name: Download install script
+      get_url:
+        url: https://get.k3s.io
+        dest: /root/install.sh
+        mode: 0700
+
+
+- hosts: master
+  tasks:
+    - name: Initialize server
+      command: /root/install.sh
+
+    - name: Get node-token
+      command: cat /var/lib/rancher/k3s/server/node-token
+      register: node_token
+
+    - name: Download kubeconfig
+      fetch:
+        src: /etc/rancher/k3s/k3s.yaml
+        dest: ~/.kube/config
+        flat: yes
+
+    - name: Replace
+      connection: local
+      replace:
+        path: ~/.kube/config
+        regexp: "127.0.0.1"
+        replace: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
+
+- hosts: workers
+  environment:
+    K3S_URL: "https://{{ hostvars['k8s-master']['ansible_default_ipv4']['address'] }}:6443"
+    K3S_TOKEN: "{{ hostvars['k8s-master']['node_token'] }}"
+  tasks:
+    - name: Debug
+      command: env
+      register: hostvars.master
+
+    - name: Debug 2
+      debug:
+        var: env_res.stdout
+
+    - name: Initialize server
+      command: /root/install.sh
+

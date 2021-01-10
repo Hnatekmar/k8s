@@ -1,5 +1,5 @@
 /.idea/
 cluster/proxmox.tfvar
-cluster/.*
-/cluster/
+/cluster/.terraform
+/cluster/.*terra.*
 /test-resources.yaml
