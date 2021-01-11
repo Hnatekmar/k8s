@@ -25,6 +25,18 @@
       command: cat /var/lib/rancher/k3s/server/node-token
       register: node_token
 
+    - name: Register node_token as global var
+      connection: local
+      copy:
+        dest: .node_token
+        content: "{{ node_token.stdout }}"
+
+    - name: Register master ip as global var
+      connection: local
+      copy:
+        dest: .master_ip
+        content: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
+
     - name: Download kubeconfig
       fetch:
         src: /etc/rancher/k3s/k3s.yaml
@@ -39,18 +51,30 @@
         replace: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
 
 - hosts: workers
-  environment:
-    K3S_URL: "https://{{ hostvars['k8s-master']['ansible_default_ipv4']['address'] }}:6443"
-    K3S_TOKEN: "{{ hostvars['k8s-master']['node_token'] }}"
+#  environment:
+#    K3S_URL: "https://{{ master_ip }}:6443"
+#    K3S_TOKEN: "{{ master_node_token }}"
   tasks:
-    - name: Debug
-      command: env
-      register: hostvars.master
+    - name: Move files to remote host
+      copy:
+        force: yes
+        src: "{{ item }}"
+        dest: "/root/{{ item }}"
+      loop:
+        - .master_ip
+        - .node_token
+    - name: Copy install script for worker
+      copy:
+        force: yes
+        dest: ./install_worker.sh
+        content: |
+          #!/bin/bash
 
-    - name: Debug 2
-      debug:
-        var: env_res.stdout
+          export K3S_URL="https://$(cat /root/.master_ip):6443"
+          export K3S_TOKEN=$(cat ~/.node_token)
+          /root/install.sh
 
     - name: Initialize server
-      command: /root/install.sh
+      command: bash /root/install_worker.sh
+
 

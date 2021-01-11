@@ -3,3 +3,4 @@ cluster/proxmox.tfvar
 /cluster/.terraform
 /cluster/.*terra.*
 /test-resources.yaml
+./certs
