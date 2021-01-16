@@ -7,52 +7,38 @@ terraform {
   }
 }
 
+variable "proxmox_url" {}
 variable "proxmox_password" {}
 variable "proxmox_username" {}
+variable "proxmox_hosts" {}
+variable "gateway" {}
+variable "clone_from" {
+  default = "debianGold"
+}
 
 provider "proxmox" {
   pm_tls_insecure = true
-  pm_api_url = "https://ps2:8006/api2/json"
+  pm_api_url = var.proxmox_url
   pm_password = var.proxmox_password
   pm_user = var.proxmox_username
   pm_otp = ""
-  pm_parallel = 1
+  pm_parallel = 3
 }
 
-resource "proxmox_vm_qemu" "master" {
-  name = "k8s-master"
-  cores = "4"
-  memory = 4096
-  sockets = "1"
-  vcpus = "0"
-  cpu = "host"
-  target_node = "proxmox"
-  os_type = "cloud-init"
-  clone = "debian-base"
-  ciuser = "root"
-  cipassword = ""
-  nameserver = "172.16.100.1"
-  sshkeys = <<EOF
-    ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKUCoQ5ZjHqe6wp8TfsTrwNkGoOP0IDftMrf3OS8fzgU martin@allmight
-  EOF
-  boot = "c"
-  agent = 1
-}
-
-resource "proxmox_vm_qemu" "worker" {
-  for_each = toset( ["proxmox", "worker0", "worker1"] )
+resource "proxmox_vm_qemu" "k8s-server" {
+  for_each = var.proxmox_hosts
   memory = 8096
-  name = "k8s-worker-${each.key}"
+  name = each.key
   cores = "4"
   sockets = "1"
-  vcpus = "0"
   cpu = "host"
-  target_node = each.key
+  target_node = each.value.name
   os_type = "cloud-init"
-  clone = "debian-base"
+  clone = var.clone_from
   ciuser = "root"
   cipassword = ""
-  nameserver = "172.16.100.1"
+  ipconfig0 = "ip=${each.value.ip}/24,gw=${var.gateway}"
+  nameserver = var.gateway
   sshkeys = <<EOF
     ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKUCoQ5ZjHqe6wp8TfsTrwNkGoOP0IDftMrf3OS8fzgU martin@allmight
   EOF
