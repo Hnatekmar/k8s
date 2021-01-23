@@ -1,9 +1,13 @@
 ---
 - hosts: all
   tasks:
-    - name: Install prerequisites
+    - name: Install curl
       apt:
         name: curl
+
+    - name: Install nfs (for nfs provider)
+      apt:
+        name: nfs-common
 
     - name: Uninstall k3s
       command: k3s-uninstall.sh
@@ -15,12 +19,18 @@
         dest: /root/install.sh
         mode: 0700
 
+    - name: Move files to remote host
+        copy:
+          force: yes
+          src: hosts
+          dest: "/etc/hosts"
+
 - hosts: master
   tasks:
     - name: Initialize server
       command: /root/install.sh --no-deploy traefik --no-deploy servicelb --no-deploy local-storage
       environment:
-        K3S_DATASTORE_ENDPOINT: postgres://postgres:pg@nas.hnatekmar.xyz:32773/postgres?sslmode=disable
+        K3S_DATASTORE_ENDPOINT: postgres://postgres:postgres@nas.hnatekmar.xyz:32773/postgres?sslmode=disable
         INSTALL_K3S_VERSION: v1.19.7+k3s1
     - name: Get node-token
       command: cat /var/lib/rancher/k3s/server/node-token

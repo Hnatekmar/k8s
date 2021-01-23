@@ -2,27 +2,27 @@ proxmox_hosts = {
     "k8s-master0": {
         ip = "172.16.100.90"
         name = "proxmox"
-        memory = 4096
+        memory = 8192
     },
     "k8s-master1": {
         ip = "172.16.100.91"
         name = "proxmox"
-        memory = 4096
+        memory = 8192
     },
     "k8s-worker0": {
         ip = "172.16.100.92"
-        name = "worker0"
-        memory = 8096
+        name = "worker1"
+        memory = 16384
     },
     "k8s-worker1": {
         ip = "172.16.100.93"
-        name = "worker1"
-        memory = 8096
+        name = "worker0"
+        memory = 16384
     }
     "k8s-worker2": {
         ip = "172.16.100.94"
-        name = "worker1"
-        memory = 8096
+        name = "worker0"
+        memory = 16384
     }
 }
 
