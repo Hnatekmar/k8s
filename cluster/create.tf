@@ -27,7 +27,7 @@ provider "proxmox" {
 
 resource "proxmox_vm_qemu" "k8s-server" {
   for_each = var.proxmox_hosts
-  memory = 8096
+  memory = each.value.memory
   name = each.key
   cores = "4"
   sockets = "1"

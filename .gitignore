@@ -4,3 +4,9 @@ cluster/proxmox.tfvar
 /cluster/.*terra.*
 /test-resources.yaml
 ./certs
+/cluster/.master_ip
+/cluster/.node_token
+/cluster/.terraform.lock.hcl
+/cluster/.terraform.tfstate.lock.info
+/cluster/terraform.tfstate
+/cluster/terraform.tfstate.backup

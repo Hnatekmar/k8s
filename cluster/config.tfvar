@@ -1,19 +1,29 @@
 proxmox_hosts = {
-    "k8s-proxmox": {
+    "k8s-master0": {
         ip = "172.16.100.90"
         name = "proxmox"
+        memory = 4096
+    },
+    "k8s-master1": {
+        ip = "172.16.100.91"
+        name = "proxmox"
+        memory = 4096
     },
     "k8s-worker0": {
-        ip = "172.16.100.91"
+        ip = "172.16.100.92"
         name = "worker0"
+        memory = 8096
     },
     "k8s-worker1": {
-        ip = "172.16.100.92"
+        ip = "172.16.100.93"
         name = "worker1"
+        memory = 8096
+    }
+    "k8s-worker2": {
+        ip = "172.16.100.94"
+        name = "worker1"
+        memory = 8096
     }
 }
 
-proxmox_url = "https://ps2:8006/api2/json"
-proxmox_username = "root@pam"
-proxmox_password =  "proxmox"
 gateway = "172.16.100.1"
